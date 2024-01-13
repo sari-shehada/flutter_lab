@@ -21,41 +21,30 @@ class AnimatedTabHeader extends StatefulWidget {
 }
 
 class _AnimatedTabHeaderState extends State<AnimatedTabHeader> {
-  late final double primaryContainerWidth;
-  late final double primaryContainerHeight;
-  late final double elementContainerWidth;
   late int currentTabIndex;
+  double primaryContainerHeight = 0.0;
+  double primaryContainerWidth = 0.0;
+  double elementContainerWidth = 0.0;
 
   @override
   void initState() {
     currentTabIndex = widget.startTabIndex;
-    final mediaQuery = (context
-            .getElementForInheritedWidgetOfExactType<MediaQuery>()!
-            .widget as MediaQuery)
-        .data;
-    // final physicalSize = mediaQuery.size * mediaQuery.devicePixelRatio;
-    final screenSize = mediaQuery.size;
-    // Size screenSize = MediaQuery.sizeOf(context);
-    primaryContainerWidth =
-        widget.primaryContainerWidth ?? screenSize.width * .6;
-
-    primaryContainerHeight =
-        widget.primaryContainerHeight ?? screenSize.height * .07;
-
-    elementContainerWidth = (primaryContainerWidth) / widget.elements.length;
     super.initState();
   }
 
-  double get borderWidth => 1;
-
   @override
   Widget build(BuildContext context) {
+    assert(
+      widget.primaryContainerWidth == null ||
+          widget.primaryContainerWidth! <= MediaQuery.sizeOf(context).width,
+      'Primary container width cannot be greater than screen width, max finite or max infinite',
+    );
+    determineElementSizes();
     return Container(
       height: primaryContainerHeight,
-      width: primaryContainerWidth + (2 * borderWidth),
+      width: primaryContainerWidth,
       decoration: BoxDecoration(
-        // color: Colors.red.withOpacity(.2),
-        borderRadius: BorderRadius.circular(200),
+        borderRadius: borderRadius,
         border: Border.all(
           color: const Color(0xFFF0F0F8),
           width: borderWidth,
@@ -63,7 +52,6 @@ class _AnimatedTabHeaderState extends State<AnimatedTabHeader> {
       ),
       clipBehavior: Clip.hardEdge,
       child: Stack(
-        fit: StackFit.passthrough,
         alignment: AlignmentDirectional.centerStart,
         children: [
           SizedBox(
@@ -79,8 +67,7 @@ class _AnimatedTabHeaderState extends State<AnimatedTabHeader> {
                     milliseconds: 300,
                   ),
                   decoration: BoxDecoration(
-                    //TODO:
-                    borderRadius: BorderRadius.circular(200),
+                    borderRadius: borderRadius,
                     color: const Color(0xFF4552CB),
                   ),
                 ),
@@ -101,10 +88,24 @@ class _AnimatedTabHeaderState extends State<AnimatedTabHeader> {
     );
   }
 
+  int get numberOfElements => widget.elements.length;
+  double get borderWidth => 1;
+  BorderRadius get borderRadius => BorderRadius.circular(200);
+
+  double getPrimaryContainerWidth(Size size) =>
+      widget.primaryContainerWidth ?? size.width * .6;
+  double getPrimaryContainerHeight(Size size) =>
+      widget.primaryContainerHeight ?? size.height * .07;
+
+  double getElementContainerWidth() {
+    double paddingValue = primaryContainerWidth / numberOfElements;
+    if (currentTabIndex == numberOfElements - 1) {
+      paddingValue -= borderWidth;
+    }
+    return paddingValue;
+  }
+
   void changeTab(int tabIndex) {
-    print(primaryContainerWidth);
-    print(elementContainerWidth);
-    print(elementContainerWidth * tabIndex);
     widget.onElementTap(tabIndex);
     if (currentTabIndex == tabIndex) {
       return;
@@ -114,6 +115,13 @@ class _AnimatedTabHeaderState extends State<AnimatedTabHeader> {
         currentTabIndex = tabIndex;
       },
     );
+  }
+
+  void determineElementSizes() {
+    Size screenSize = MediaQuery.sizeOf(context);
+    primaryContainerWidth = getPrimaryContainerWidth(screenSize);
+    primaryContainerHeight = getPrimaryContainerHeight(screenSize);
+    elementContainerWidth = getElementContainerWidth();
   }
 }
 
@@ -134,6 +142,9 @@ class AnimatedTabHeaderItem extends StatelessWidget {
         child: Center(
           child: Text(
             title,
+            style: const TextStyle(
+              fontSize: 22,
+            ),
           ),
         ),
       ),
