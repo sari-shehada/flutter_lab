@@ -58,17 +58,21 @@ class _AnimatedTabHeaderState extends State<AnimatedTabHeader> {
             width: primaryContainerWidth,
             child: Row(
               children: [
-                AnimatedContainer(
-                  width: elementContainerWidth,
-                  margin: EdgeInsetsDirectional.only(
+                AnimatedPadding(
+                  padding: EdgeInsetsDirectional.only(
                     start: currentTabIndex * elementContainerWidth,
                   ),
                   duration: const Duration(
-                    milliseconds: 300,
+                    milliseconds: 350,
                   ),
-                  decoration: BoxDecoration(
-                    borderRadius: borderRadius,
-                    color: const Color(0xFF4552CB),
+                  curve: Easing.legacy,
+                  child: Container(
+                    width: elementContainerWidth,
+                    height: primaryContainerHeight,
+                    decoration: BoxDecoration(
+                      borderRadius: borderRadius,
+                      color: const Color(0xFF4552CB),
+                    ),
                   ),
                 ),
               ],
@@ -134,6 +138,7 @@ class AnimatedTabHeaderItem extends StatelessWidget {
 
   final String title;
   final VoidCallback onTap;
+
   @override
   Widget build(BuildContext context) {
     return Expanded(
@@ -142,9 +147,6 @@ class AnimatedTabHeaderItem extends StatelessWidget {
         child: Center(
           child: Text(
             title,
-            style: const TextStyle(
-              fontSize: 22,
-            ),
           ),
         ),
       ),
